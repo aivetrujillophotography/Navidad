@@ -390,7 +390,7 @@
         wTw = gsap.to(fam, { x: nx, y: ny, duration: (1.2 + Math.random() * 2) / speed, ease: 'sine.inOut', onComplete: wander });
       };
       wander();
-      const vx = gsap.quickTo(vf, 'x', { duration: 0.35, ease: 'power3.out' }), vy = gsap.quickTo(vf, 'y', { duration: 0.35, ease: 'power3.out' });
+      const vx = gsap.quickTo(vf, 'x', { duration: 0.08, ease: 'power2.out' }), vy = gsap.quickTo(vf, 'y', { duration: 0.08, ease: 'power2.out' });
       gsap.set(vf, { x: W() / 2, y: H() * 0.5 });
       const move = (e) => { const p = e.touches ? e.touches[0] : e; vx(p.clientX); vy(p.clientY); };
       ld.addEventListener('pointermove', move); ld.addEventListener('touchmove', move, { passive: true });
@@ -401,7 +401,7 @@
       const shoot = (e) => {
         if (!playing || e.target.closest('button')) return;
         const p = e.touches ? e.changedTouches[0] : e;
-        if (e.pointerType !== 'mouse') gsap.set(vf, { x: p.clientX, y: p.clientY });
+        vx(p.clientX); vy(p.clientY); gsap.set(vf, { x: p.clientX, y: p.clientY });
         gsap.fromTo(flash, { opacity: 0.9 }, { opacity: 0, duration: 0.5, ease: 'power2.out' });
         const a = fam.getBoundingClientRect();
         const cx = gsap.getProperty(vf, 'x'), cy = gsap.getProperty(vf, 'y'), vw = vf.offsetWidth, vh = vf.offsetHeight;
@@ -413,7 +413,11 @@
         stars += sc; shots--;
         $('.pf-left', ld).textContent = shots; $('.pf-score', ld).textContent = stars;
         const shot = $('.pf-shot', toast); shot.innerHTML = '';
-        if (sc > 0) { const c = fam.cloneNode(true); c.style.cssText = 'position:absolute;width:' + (a.width * 200 / vw) + 'px;left:' + ((a.left - b.left) * 200 / vw) + 'px;top:' + ((a.top - b.top) * (200 / vw)) + 'px;transform:none'; shot.appendChild(c); }
+        const k = shot.offsetWidth / vw || 200 / vw;
+        const snap = d.createElement('div');
+        snap.style.cssText = 'position:absolute;left:0;top:0;width:' + innerWidth + 'px;height:' + innerHeight + 'px;transform-origin:0 0;transform:scale(' + k + ') translate(' + (-b.left) + 'px,' + (-b.top) + 'px);pointer-events:none';
+        ['.pf-sky', '.pf-sun', '.pf-sea', '.pf-fam'].forEach((sel) => { const n = $(sel, ld); if (n) { const c = n.cloneNode(true); if (sel === '.pf-fam') c.style.transform = getComputedStyle(n).transform; snap.appendChild(c); } });
+        shot.appendChild(snap);
         $('.pf-stars', toast).textContent = '★'.repeat(sc) + '☆'.repeat(3 - sc);
         $('.pf-msg', toast).textContent = msgs[sc];
         toast.hidden = false; gsap.fromTo(toast, { opacity: 0, y: 20, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: 'back.out(2)' });

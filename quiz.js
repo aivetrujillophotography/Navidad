@@ -385,7 +385,7 @@
   // Booking links just scroll to the quiz; the intro screen explains it before starting.
 
   form.addEventListener('change', e => {
-    if (e.target.name !== 'gusto_web') return;
+    if (e.target.name !== 'Le gustó la web') return;
     const yes = /^(Sí|Yes)$/.test(e.target.value);
     form.querySelectorAll('.qz-webmsg').forEach(m => { const on = m.dataset.web === (yes ? 'si' : 'no'); m.hidden = !on; if (on && window.gsap) gsap.fromTo(m, { opacity: 0, y: 14, scale: .97 }, { opacity: 1, y: 0, scale: 1, duration: .5, ease: 'back.out(2)' }); });
   });
