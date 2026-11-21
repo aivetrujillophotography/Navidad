@@ -398,6 +398,7 @@
       };
       let drag = null;
       santa.addEventListener('pointerdown', (e) => {
+        if (ld.classList.contains('is-playing')) return;
         e.preventDefault(); e.stopPropagation();
         fly.pause();
         drag = { sx: e.clientX, sy: e.clientY, x: gsap.getProperty(santa, 'x'), y: gsap.getProperty(santa, 'y'), moved: false, was: paused };
@@ -429,6 +430,70 @@
           .to(ld, { backgroundColor: 'rgba(0,0,0,0)', duration: 0.6 }, 0.25)
           .add(() => { unlock(); next(); }, 0.4);
       };
+      // ---- Mini game: Santa catches snowflakes ----
+      const gm = $('.xm-game', ld);
+      if (gm) {
+        const hud = $('.xm-hud', ld), scEl = $('.xm-score', ld), tmEl = $('.xm-time', ld), endEl = $('.xm-end', ld), field = $('.xm-field', ld);
+        const LV = { easy: { every: 520, fall: [5200, 6800], size: 34 }, mid: { every: 380, fall: [3800, 5200], size: 28 }, hard: { every: 260, fall: [2600, 3800], size: 22 } };
+        let playing = false, score = 0, lvl = 'easy', spawnT = null, tickT = null, rafId = null, left = 15;
+        const best = () => { try { return +localStorage.getItem('xm-best-' + lvl) || 0; } catch (e) { return 0; } };
+        const saveBest = (v) => { try { localStorage.setItem('xm-best-' + lvl, String(v)); } catch (e) {} };
+        const follow = (e) => {
+          if (!playing) return;
+          const pt = e.touches ? e.touches[0] : e;
+          const r = santa.getBoundingClientRect();
+          gsap.to(santa, { x: '+=' + (pt.clientX - (r.left + r.width * 0.62)), y: '+=' + (pt.clientY - (r.top + r.height * 0.45)), rotate: 0, duration: 0.25, ease: 'power2.out', overwrite: 'auto' });
+        };
+        ld.addEventListener('pointermove', follow);
+        ld.addEventListener('touchmove', follow, { passive: true });
+        const spawn = () => {
+          const c = LV[lvl], f = d.createElement('b');
+          f.className = 'xm-flake'; f.textContent = '❄';
+          const sz = c.size * (0.8 + Math.random() * 0.5);
+          f.style.fontSize = sz + 'px'; f.style.left = (4 + Math.random() * 92) + '%';
+          field.appendChild(f);
+          const dur = (c.fall[0] + Math.random() * (c.fall[1] - c.fall[0])) / 1000;
+          f._tw = gsap.fromTo(f, { y: -40, rotate: 0 }, { y: innerHeight + 40, rotate: 360, duration: dur, ease: 'none', onComplete: () => f.remove() });
+        };
+        const hit = () => {
+          if (!playing) return;
+          const r = santa.getBoundingClientRect();
+          const box = { l: r.left + r.width * 0.08, r: r.right - r.width * 0.02, t: r.top + r.height * 0.1, b: r.bottom - r.height * 0.15 };
+          field.querySelectorAll('.xm-flake:not(.got)').forEach((f) => {
+            const q = f.getBoundingClientRect(), cx = q.left + q.width / 2, cy = q.top + q.height / 2;
+            if (cx > box.l && cx < box.r && cy > box.t && cy < box.b) {
+              f.classList.add('got'); if (f._tw) f._tw.kill();
+              score++; scEl.textContent = score;
+              gsap.fromTo(scEl, { scale: 1.4 }, { scale: 1, duration: 0.3, ease: 'back.out(3)' });
+              gsap.to(f, { scale: 2, opacity: 0, duration: 0.35, onComplete: () => f.remove() });
+            }
+          });
+          rafId = requestAnimationFrame(hit);
+        };
+        const stop = () => {
+          playing = false; clearInterval(spawnT); clearInterval(tickT); cancelAnimationFrame(rafId);
+          field.querySelectorAll('.xm-flake').forEach((f) => { if (f._tw) f._tw.kill(); gsap.to(f, { opacity: 0, duration: 0.3, onComplete: () => f.remove() }); });
+          const b = best(); const rec = score > b; if (rec) saveBest(score);
+          $('.xm-end-n', ld).textContent = score;
+          $('.xm-end-best', ld).textContent = rec ? ((d.documentElement.lang || '').startsWith('en') ? 'New record! 🎉' : '¡Nuevo récord! 🎉') : (((d.documentElement.lang || '').startsWith('en') ? 'Your best: ' : 'Tu mejor marca: ') + b);
+          hud.hidden = true; endEl.hidden = false;
+          gsap.fromTo(endEl, { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.45, ease: 'back.out(2)' });
+        };
+        const start = (l) => {
+          lvl = l; score = 0; left = 15; scEl.textContent = '0'; tmEl.textContent = '15';
+          fly.kill(); setPaused(false);
+          gsap.to(santa, { x: innerWidth * 0.5 - santa.getBoundingClientRect().width * 0.6, y: innerHeight * 0.45, rotate: 0, duration: 0.6, ease: 'power3.out' });
+          gm.hidden = true; endEl.hidden = true; hud.hidden = false; ld.classList.add('is-playing');
+          playing = true; spawn();
+          spawnT = setInterval(spawn, LV[lvl].every);
+          tickT = setInterval(() => { left--; tmEl.textContent = left; if (left <= 3) gsap.fromTo(tmEl, { scale: 1.3 }, { scale: 1, duration: 0.3 }); if (left <= 0) stop(); }, 1000);
+          rafId = requestAnimationFrame(hit);
+        };
+        gm.addEventListener('click', (e) => { const b = e.target.closest('[data-lvl]'); if (b) start(b.dataset.lvl); });
+        $('.xm-retry', ld).addEventListener('click', () => start(lvl));
+        $('.xm-levels', ld).addEventListener('click', () => { endEl.hidden = true; gm.hidden = false; ld.classList.remove('is-playing'); });
+        $('.xm-end-go', ld).addEventListener('click', () => { ld.classList.remove('is-playing'); open(); });
+      }
       if (go) { go.addEventListener('click', open); setTimeout(() => go.focus({ preventScroll: true }), 900); }
       else setTimeout(open, 3000);
       ld.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === 'Escape') open(); });
