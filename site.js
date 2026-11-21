@@ -364,6 +364,95 @@
     const ld = $('.loader');
     let seen = false;
     try { seen = !!sessionStorage.getItem('aive-seen'); } catch (e) {}
+    if (ld && ld.classList.contains('photo')) {
+      try { sessionStorage.setItem('aive-seen', '1'); } catch (e) {}
+      let nav = 'navigate';
+      try { nav = (performance.getEntriesByType('navigation')[0] || {}).type || 'navigate'; } catch (e) {}
+      let internal = false;
+      try { internal = !!d.referrer && new URL(d.referrer).origin === location.origin; } catch (e) {}
+      if (nav !== 'reload' && internal) { ld.remove(); next(); return; }
+      const root = d.documentElement, block = (e) => e.preventDefault();
+      root.style.overflow = 'hidden'; d.body.style.overflow = 'hidden';
+      try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch (e) {}
+      scrollTo(0, 0);
+      if (window.__lenis) { __lenis.scrollTo(0, { immediate: true }); __lenis.stop(); }
+      addEventListener('wheel', block, { passive: false }); addEventListener('touchmove', block, { passive: false });
+      const fam = $('.pf-fam', ld), vf = $('.pf-vf', ld), flash = $('.pf-flash', ld), hud = $('.pf-hud', ld), toast = $('.pf-toast', ld);
+      const startC = $('.pf-start', ld), finalC = $('.pf-final', ld);
+      const W = () => innerWidth, H = () => innerHeight;
+      gsap.set(fam, { x: W() * 0.4, y: H() * 0.66 });
+      let wTw = null, speed = 1;
+      const wander = () => {
+        const fw = fam.getBoundingClientRect().width;
+        const nx = W() * 0.04 + Math.random() * (W() * 0.92 - fw);
+        const ny = H() * (0.6 + Math.random() * 0.22);
+        fam.classList.toggle('is-left', nx < gsap.getProperty(fam, 'x'));
+        wTw = gsap.to(fam, { x: nx, y: ny, duration: (1.2 + Math.random() * 2) / speed, ease: 'sine.inOut', onComplete: wander });
+      };
+      wander();
+      const vx = gsap.quickTo(vf, 'x', { duration: 0.35, ease: 'power3.out' }), vy = gsap.quickTo(vf, 'y', { duration: 0.35, ease: 'power3.out' });
+      gsap.set(vf, { x: W() / 2, y: H() * 0.5 });
+      const move = (e) => { const p = e.touches ? e.touches[0] : e; vx(p.clientX); vy(p.clientY); };
+      ld.addEventListener('pointermove', move); ld.addEventListener('touchmove', move, { passive: true });
+      let playing = false, shots = 3, stars = 0;
+      const msgs = d.documentElement.lang.startsWith('en')
+        ? ['They got away! 🏃', 'Almost… the little one moved 😄', 'So close! Nice one', 'Perfect shot! ✦']
+        : ['¡Se te escaparon! 🏃', 'Casi… se te movió el peque 😄', '¡Muy cerca! Bien ahí', '¡Foto perfecta! ✦'];
+      const shoot = (e) => {
+        if (!playing || e.target.closest('button')) return;
+        const p = e.touches ? e.changedTouches[0] : e;
+        if (e.pointerType !== 'mouse') gsap.set(vf, { x: p.clientX, y: p.clientY });
+        gsap.fromTo(flash, { opacity: 0.9 }, { opacity: 0, duration: 0.5, ease: 'power2.out' });
+        const a = fam.getBoundingClientRect();
+        const cx = gsap.getProperty(vf, 'x'), cy = gsap.getProperty(vf, 'y'), vw = vf.offsetWidth, vh = vf.offsetHeight;
+        const b = { left: cx - vw / 2, right: cx + vw / 2, top: cy - vh / 2, bottom: cy + vh / 2 };
+        const ix = Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)), iy = Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+        const ratio = (ix * iy) / (a.width * a.height);
+        const dist = Math.hypot((a.left + a.width / 2) - cx, (a.top + a.height / 2) - cy) / vw;
+        const sc = ratio > 0.85 && dist < 0.3 ? 3 : ratio > 0.55 ? 2 : ratio > 0.15 ? 1 : 0;
+        stars += sc; shots--;
+        $('.pf-left', ld).textContent = shots; $('.pf-score', ld).textContent = stars;
+        const shot = $('.pf-shot', toast); shot.innerHTML = '';
+        if (sc > 0) { const c = fam.cloneNode(true); c.style.cssText = 'position:absolute;width:' + (a.width * 200 / vw) + 'px;left:' + ((a.left - b.left) * 200 / vw) + 'px;top:' + ((a.top - b.top) * (200 / vw)) + 'px;transform:none'; shot.appendChild(c); }
+        $('.pf-stars', toast).textContent = '★'.repeat(sc) + '☆'.repeat(3 - sc);
+        $('.pf-msg', toast).textContent = msgs[sc];
+        toast.hidden = false; gsap.fromTo(toast, { opacity: 0, y: 20, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: 'back.out(2)' });
+        clearTimeout(toast._t); toast._t = setTimeout(() => { toast.hidden = true; }, 1500);
+        speed = 1 + (3 - shots) * 0.35;
+        if (shots <= 0) {
+          playing = false;
+          setTimeout(() => {
+            hud.hidden = true; toast.hidden = true; ld.classList.add('is-menu'); if (px) px.hidden = true;
+            $('.pf-final-h', ld).innerHTML = (d.documentElement.lang.startsWith('en') ? 'You got ' : '¡Sumaste ') + stars + ' ⭐ ' + (d.documentElement.lang.startsWith('en') ? 'of 9!' : 'de 9!');
+            finalC.hidden = false; gsap.fromTo(finalC, { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(2)' });
+          }, 1300);
+        }
+      };
+      ld.addEventListener('pointerup', shoot);
+      const px = $('.pf-x', ld);
+      const quitPhoto = () => { playing = false; hud.hidden = true; toast.hidden = true; finalC.hidden = true; startC.hidden = false; ld.classList.add('is-menu'); if (px) px.hidden = true; };
+      if (px) px.addEventListener('click', (e) => { e.stopPropagation(); quitPhoto(); });
+      const play = () => { shots = 3; stars = 0; speed = 1; $('.pf-left', ld).textContent = 3; $('.pf-score', ld).textContent = 0; startC.hidden = true; finalC.hidden = true; hud.hidden = false; ld.classList.remove('is-menu'); if (px) px.hidden = false; setTimeout(() => { playing = true; }, 250); };
+      let opened = false;
+      const open = () => {
+        if (opened) return; opened = true; playing = false;
+        if (wTw) wTw.kill();
+        gsap.timeline({ onComplete: () => ld.remove() })
+          .to(ld, { yPercent: -100, duration: 1.05, ease: 'power4.inOut' }, 0)
+          .add(() => {
+            removeEventListener('wheel', block); removeEventListener('touchmove', block);
+            root.style.overflow = ''; d.body.style.overflow = ''; scrollTo(0, 0);
+            if (window.__lenis) { __lenis.scrollTo(0, { immediate: true }); __lenis.start(); }
+            next();
+          }, 0.35);
+      };
+      ld.classList.add('is-menu');
+      $$('.pf-play', ld).forEach((b) => b.addEventListener('click', play));
+      $$('.pf-enter', ld).forEach((b) => b.addEventListener('click', open));
+      $('.pf-skip', ld).addEventListener('click', open);
+      ld.addEventListener('keydown', (e) => { if (e.key === 'Escape') open(); });
+      return;
+    }
     if (!ld || seen || h.classList.contains('seen')) { if (ld) ld.remove(); next(); return; }
     try { sessionStorage.setItem('aive-seen', '1'); } catch (e) {}
     if (ld.classList.contains('xmas')) {
@@ -489,6 +578,13 @@
           tickT = setInterval(() => { left--; tmEl.textContent = left; if (left <= 3) gsap.fromTo(tmEl, { scale: 1.3 }, { scale: 1, duration: 0.3 }); if (left <= 0) stop(); }, 1000);
           rafId = requestAnimationFrame(hit);
         };
+        const quit = () => {
+          playing = false; clearInterval(spawnT); clearInterval(tickT); cancelAnimationFrame(rafId);
+          field.querySelectorAll('.xm-flake').forEach((f) => { if (f._tw) f._tw.kill(); f.remove(); });
+          hud.hidden = true; endEl.hidden = true; gm.hidden = false; ld.classList.remove('is-playing');
+          fly = flyFrom();
+        };
+        const qx = $('.xm-x', ld); if (qx) qx.addEventListener('click', (e) => { e.stopPropagation(); quit(); });
         gm.addEventListener('click', (e) => { const b = e.target.closest('[data-lvl]'); if (b) start(b.dataset.lvl); });
         $('.xm-retry', ld).addEventListener('click', () => start(lvl));
         $('.xm-levels', ld).addEventListener('click', () => { endEl.hidden = true; gm.hidden = false; ld.classList.remove('is-playing'); });
