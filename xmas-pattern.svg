@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="280" viewBox="0 0 280 280" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <g stroke="#8FC3E6" stroke-width="2">
+    <!-- snowflake -->
+    <g transform="translate(36 38)">
+      <path d="M0-16V16M-14-8 14 8M-14 8 14-8"/>
+      <path d="M-4-12 0-8 4-12M-4 12 0 8 4 12M-13-3-9-5-12-9M13 3 9 5 12 9M-12 9-9 5-13 3M12-9 9-5 13-3"/>
+    </g>
+    <!-- christmas tree -->
+    <g transform="translate(150 30)">
+      <path d="M0 0 14 18H6L20 36H8L24 56H-24L-8 36H-20L-6 18H-14Z" fill="#DCEEFA"/>
+      <path d="M-4 56V66H4V56"/>
+      <path d="M0-12 2.5-6 9-5.5 4-1.5 5.5 5 0 1.5-5.5 5-4-1.5-9-5.5-2.5-6Z" fill="#FFFFFF"/>
+      <circle cx="-6" cy="44" r="2.2" fill="#8FC3E6" stroke="none"/><circle cx="8" cy="30" r="2.2" fill="#8FC3E6" stroke="none"/><circle cx="3" cy="48" r="2.2" fill="#8FC3E6" stroke="none"/>
+    </g>
+    <!-- gingerbread -->
+    <g transform="translate(232 128)">
+      <circle cx="0" cy="-20" r="10" fill="#EAF4FB"/>
+      <path d="M-8-10C-16-10-22-6-22 0S-16 4-10 2C-12 10-14 18-14 22C-14 28-6 28-4 22L0 14 4 22C6 28 14 28 14 22C14 18 12 10 10 2C16 4 22 6 22 0S16-10 8-10Z" fill="#EAF4FB"/>
+      <path d="M-4-22h.01M4-22h.01M-3-16C-1-14 1-14 3-16" stroke-width="2.2"/>
+      <circle cx="0" cy="-2" r="1.8" fill="#8FC3E6" stroke="none"/><circle cx="0" cy="5" r="1.8" fill="#8FC3E6" stroke="none"/>
+      <path d="M-18-3-14-1M18-3 14-1" />
+    </g>
+    <!-- sleigh -->
+    <g transform="translate(58 168)">
+      <path d="M-30 18H22C30 18 34 12 34 6" />
+      <path d="M-22 18V10M14 18V10"/>
+      <path d="M-28 10H18C24 10 26 4 26-4V-12H6C6-4 0 0-8 0H-24C-28 0-30 4-28 10Z" fill="#DCEEFA"/>
+      <path d="M-14-6-8-14-2-6Z" fill="#FFFFFF"/>
+      <path d="M-26 4H22"/>
+    </g>
+    <!-- reindeer -->
+    <g transform="translate(158 206)">
+      <path d="M-8-14C-14-22-16-30-12-36M-12-28-20-30M-10-22-18-20M8-14C14-22 16-30 12-36M12-28 20-30M10-22 18-20"/>
+      <path d="M-10-14C-16-16-20-12-18-8C-16-6-12-8-10-10M10-14C16-16 20-12 18-8C16-6 12-8 10-10" fill="#EAF4FB"/>
+      <path d="M0-16C10-16 14-8 12 4C10 14 6 18 0 18S-10 14-12 4C-14-8-10-16 0-16Z" fill="#EAF4FB"/>
+      <path d="M-5-4h.01M5-4h.01" stroke-width="2.6"/>
+      <circle cx="0" cy="10" r="4.5" fill="#8FC3E6" stroke="none"/>
+    </g>
+    <!-- small snowflake -->
+    <g transform="translate(238 236)"><path d="M0-9V9M-8-4 8 4M-8 4 8-4"/></g>
+    <!-- star -->
+    <g transform="translate(88 92)"><path d="M0-9 2.6-3 9-2.6 4 1.6 5.6 8 0 4.4-5.6 8-4 1.6-9-2.6-2.6-3Z" fill="#FFFFFF"/></g>
+    <!-- candy cane -->
+    <g transform="translate(246 40)"><path d="M0 26V0C0-8 12-8 12 0" stroke-width="5" stroke="#CFE6F5"/><path d="M0 22V20M0 14V12M0 6V4M4-5 6-3M10-4 11-1" stroke="#8FC3E6" stroke-width="2"/></g>
+  </g>
+  <g fill="#B9DAF0">
+    <circle cx="112" cy="132" r="2.4"/><circle cx="16" cy="104" r="1.8"/><circle cx="200" cy="80" r="2"/><circle cx="96" cy="250" r="2.2"/><circle cx="268" cy="190" r="1.6"/><circle cx="20" cy="250" r="2"/><circle cx="196" cy="262" r="1.6"/><circle cx="120" cy="14" r="1.6"/>
+  </g>
+</svg>
